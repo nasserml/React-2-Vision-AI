@@ -35,6 +35,7 @@ function Provider({
 // Custom hook to use auth
 export const useAuthContext = (): AuthContextType => {
     const context = useContext(AuthContext);
+    console.log(context);
     if (!context) throw new Error("useAuth must be used within an AuthProvider");
     return context;
 };

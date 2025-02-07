@@ -10,6 +10,7 @@ import { useAuthContext } from './provider';
 export default function Home() {
   // const user = auth?.currentUser;
   // console.log(user)
+  console.log(process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
   const user = useAuthContext();
   console.log(user?.user);
   return (
