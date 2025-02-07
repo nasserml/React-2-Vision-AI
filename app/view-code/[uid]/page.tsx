@@ -20,7 +20,8 @@ function ViewCode() {
   const { uid } = useParams();
   const [loading, setLoading] = useState(false);
   const [codeResp, setCodeResp] = useState('');
-  const [record, setRecord] = useState()
+  const [record, setRecord] = useState();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     uid && GetRecordInfo();
@@ -28,13 +29,14 @@ function ViewCode() {
 
   const GetRecordInfo = async () => {
     setLoading(true);
+    setIsReady(false);
     const result = await axios.get('/api/wireframe-to-code?uid=' + uid);
     const resp = result?.data;
 
-    setRecord(result?.data)
+    setRecord(result?.data);
 
     if (resp?.code == null) {
-      // await GenerateCode(resp)
+      await GenerateCode(resp);
     }
     if (resp?.error) {
       console.log('No Record Found');
@@ -43,8 +45,9 @@ function ViewCode() {
     setLoading(false);
   };
   const GenerateCode = async (record: RECORD) => {
+    setIsReady(false);
     setLoading(true);
-    return;
+    // return;
     const res = await fetch('/api/ai-model', {
       method: 'POST',
       headers: {
@@ -67,27 +70,27 @@ function ViewCode() {
       const text = decoder
         .decode(value)
         .replace('```typescript', '')
-        .replace('```', '');
+        .replace('```', '')
+        .replace('jsx', '');
       setCodeResp((prev) => prev + text);
       console.log(text);
     }
+    setIsReady(true);
     setLoading(false);
   };
   return (
     <div>
       <AppHeader hideSideBar={true} />
 
-      <div className='grid grid-cols-1 md:grid-cols-5 p-54'>
+      <div className="grid grid-cols-1 md:grid-cols-5 p-5 gap-10">
         <div>
           {/* Selection Details */}
           <SelectionDetails record={record} />
-
         </div>
 
-        <div>
+        <div className="col-span-4">
           {/* Code Editor */}
-          <CodeEditor />
-
+          <CodeEditor codeResp={codeResp} isReady={isReady} />
         </div>
       </div>
     </div>
