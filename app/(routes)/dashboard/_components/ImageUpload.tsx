@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/select';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { storage } from '@/configs/firebaseConfig';
+import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import { useAuthContext } from '@/app/provider';
 
 function ImageUpload() {
   const AiModelList = [
@@ -33,6 +36,7 @@ function ImageUpload() {
   const [file, setFile] = useState<any>();
   const [model, setModel] = useState<string>();
   const [description, setDescription] = useState<string>();
+  const {user} = useAuthContext()
   const OnImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
@@ -56,6 +60,17 @@ function ImageUpload() {
     });
     const imageUrl = await getDownloadURL(imageRef);
     console.log(imageUrl);
+
+    const uid = uuidv4();
+    // Save Info to Database
+    const result = await axios.post('/api/wireframe-to-code', {
+      uid:uid,
+      description: description,
+      imageUrl: imageUrl,
+      model: model,
+      email: user?.email
+    });
+    console.log(result.data)
   };
   return (
     <div className="mt-10">
