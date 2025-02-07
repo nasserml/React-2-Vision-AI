@@ -2,7 +2,7 @@
 import AppHeader from '@/app/_components/AppHeader';
 import Constants from '@/data/Constants';
 import axios from 'axios';
-import { LoaderCircle } from 'lucide-react';
+import { Loader2, LoaderCircle } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import SelectionDetails from '../_components/SelectionDetails';
@@ -18,7 +18,7 @@ export interface RECORD {
 }
 function ViewCode() {
   const { uid } = useParams();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [codeResp, setCodeResp] = useState('');
   const [record, setRecord] = useState();
   const [isReady, setIsReady] = useState(false);
@@ -30,13 +30,14 @@ function ViewCode() {
   const GetRecordInfo = async () => {
     setLoading(true);
     setIsReady(false);
+    setCodeResp('');
     const result = await axios.get('/api/wireframe-to-code?uid=' + uid);
     const resp = result?.data;
 
     setRecord(result?.data);
 
     if (resp?.code == null) {
-      await GenerateCode(resp);
+      // await GenerateCode(resp);
     }
     if (resp?.error) {
       console.log('No Record Found');
@@ -46,8 +47,8 @@ function ViewCode() {
   };
   const GenerateCode = async (record: RECORD) => {
     setIsReady(false);
-    setLoading(true);
-    // return;
+    // setLoading(true);
+    return;
     const res = await fetch('/api/ai-model', {
       method: 'POST',
       headers: {
@@ -63,6 +64,7 @@ function ViewCode() {
     if (!res.body) return;
     const reader = res.body?.getReader() as any;
     const decoder = new TextDecoder();
+    setLoading(false);
 
     while (true) {
       const { done, value } = await reader?.read();
@@ -76,7 +78,7 @@ function ViewCode() {
       console.log(text);
     }
     setIsReady(true);
-    setLoading(false);
+    // setLoading(false);
   };
   return (
     <div>
@@ -85,12 +87,20 @@ function ViewCode() {
       <div className="grid grid-cols-1 md:grid-cols-5 p-5 gap-10">
         <div>
           {/* Selection Details */}
-          <SelectionDetails record={record} />
+          <SelectionDetails record={record} regenerateCode={()=>GetRecordInfo()} isReady={isReady} />
         </div>
 
         <div className="col-span-4">
           {/* Code Editor */}
-          <CodeEditor codeResp={codeResp} isReady={isReady} />
+          {loading ? (
+            <div>
+              <h2 className="flex gap-2 items-center text-2xl p-20 font-bold justify-center bg-slate-100/90 h-[80vh] rounded-xl">
+                <Loader2 className="animate-spin" /> Analyzing the WireFrame...
+              </h2>
+            </div>
+          ) : (
+            <CodeEditor codeResp={codeResp} isReady={isReady}   />
+          )}
         </div>
       </div>
     </div>
