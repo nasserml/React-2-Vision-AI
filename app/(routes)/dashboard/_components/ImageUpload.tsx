@@ -1,7 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { CloudUpload, WandSparkles, X } from 'lucide-react';
+import { CloudUpload, Loader2Icon, WandSparkles, X } from 'lucide-react';
 import Image from 'next/image';
 import React, { ChangeEvent, useState } from 'react';
 import {
@@ -16,27 +16,17 @@ import { storage } from '@/configs/firebaseConfig';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuthContext } from '@/app/provider';
+import { useRouter } from 'next/navigation';
+import Constants from '@/data/Constants';
 
 function ImageUpload() {
-  const AiModelList = [
-    {
-      name: 'Gemini Google',
-      icon: '/google.png',
-    },
-    {
-      name: 'llama By Meta',
-      icon: '/meta.png',
-    },
-    {
-      name: 'Deepseek',
-      icon: '/deepseek.png',
-    },
-  ];
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [file, setFile] = useState<any>();
   const [model, setModel] = useState<string>();
   const [description, setDescription] = useState<string>();
-  const {user} = useAuthContext()
+  const { user } = useAuthContext();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const OnImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
@@ -49,9 +39,10 @@ function ImageUpload() {
 
   const OnConvertToCodeButtonClick = async () => {
     if (!file || !description || !model) {
-      console.log('select all field')
-      return
-    };
+      console.log('select all field');
+      return;
+    }
+    setLoading(true);
     // Save image to Firebase
     const fileName = Date.now() + '.png';
     const imageRef = ref(storage, 'vision-to-react-ai/' + fileName);
@@ -64,13 +55,16 @@ function ImageUpload() {
     const uid = uuidv4();
     // Save Info to Database
     const result = await axios.post('/api/wireframe-to-code', {
-      uid:uid,
+      uid: uid,
       description: description,
       imageUrl: imageUrl,
       model: model,
-      email: user?.email
+      email: user?.email,
     });
-    console.log(result.data)
+    console.log(result.data);
+
+    setLoading(false);
+    router.push('/view-code/' + uid);
   };
   return (
     <div className="mt-10">
@@ -119,9 +113,9 @@ function ImageUpload() {
               <SelectValue placeholder="Select AI Model" />
             </SelectTrigger>
             <SelectContent>
-              {AiModelList.map((model, index) => (
+              {Constants.AiModelList.map((model, index) => (
                 <SelectItem value={model.name} key={index}>
-                  <div className="flex items-center gap-2" >
+                  <div className="flex items-center gap-2">
                     <Image
                       src={model.icon}
                       width={25}
@@ -146,8 +140,13 @@ function ImageUpload() {
         </div>
       </div>
       <div className="mt-10 flex justify-center items-center">
-        <Button onClick={OnConvertToCodeButtonClick}>
-          <WandSparkles /> Convert to Code
+        <Button onClick={OnConvertToCodeButtonClick} disabled={loading}>
+          {loading ? (
+            <Loader2Icon className=" animate-spin" />
+          ) : (
+            <WandSparkles />
+          )}
+          Convert to Code
         </Button>
       </div>
     </div>
