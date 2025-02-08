@@ -15,13 +15,15 @@ export interface RECORD {
   imageUrl: string;
   model: string;
   createdBy: string;
+  uid: string;
 }
 function ViewCode() {
   const { uid } = useParams();
   const [loading, setLoading] = useState(true);
   const [codeResp, setCodeResp] = useState('');
-  const [record, setRecord] = useState();
+  const [record, setRecord] = useState<RECORD | null>(null);
   const [isReady, setIsReady] = useState(false);
+  // const [isExistingCode, setIsExistingCode] = useState(false);
 
   useEffect(() => {
     uid && GetRecordInfo();
@@ -37,7 +39,11 @@ function ViewCode() {
     setRecord(result?.data);
 
     if (resp?.code == null) {
-      // await GenerateCode(resp);
+      await GenerateCode(resp);
+    } else {
+      setCodeResp(resp?.code?.resp);
+      setLoading(false);
+      setIsReady(true);
     }
     if (resp?.error) {
       console.log('No Record Found');
@@ -48,7 +54,7 @@ function ViewCode() {
   const GenerateCode = async (record: RECORD) => {
     setIsReady(false);
     // setLoading(true);
-    return;
+    // return;
     const res = await fetch('/api/ai-model', {
       method: 'POST',
       headers: {
@@ -77,8 +83,22 @@ function ViewCode() {
       setCodeResp((prev) => prev + text);
       console.log(text);
     }
+    UpdateCodeToDb();
     setIsReady(true);
     // setLoading(false);
+  };
+
+  useEffect(() => {
+    if (codeResp != '' && record?.uid && isReady && record?.code == null) {
+      UpdateCodeToDb();
+    }
+  }, [codeResp && record && isReady]);
+
+  const UpdateCodeToDb = async () => {
+    const result = await axios.put('/api/wireframe-to-code', {
+      uid: record?.uid,
+      codeResp: { resp: codeResp },
+    });
   };
   return (
     <div>
@@ -87,7 +107,11 @@ function ViewCode() {
       <div className="grid grid-cols-1 md:grid-cols-5 p-5 gap-10">
         <div>
           {/* Selection Details */}
-          <SelectionDetails record={record} regenerateCode={()=>GetRecordInfo()} isReady={isReady} />
+          <SelectionDetails
+            record={record}
+            regenerateCode={() => GetRecordInfo()}
+            isReady={isReady}
+          />
         </div>
 
         <div className="col-span-4">
@@ -99,7 +123,7 @@ function ViewCode() {
               </h2>
             </div>
           ) : (
-            <CodeEditor codeResp={codeResp} isReady={isReady}   />
+            <CodeEditor codeResp={codeResp} isReady={isReady} />
           )}
         </div>
       </div>
