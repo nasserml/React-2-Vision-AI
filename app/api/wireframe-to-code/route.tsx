@@ -1,23 +1,38 @@
 import { db } from '@/configs/db';
-import { WireframeToCodeTable } from '@/configs/schema';
+import { usersTable, WireframeToCodeTable } from '@/configs/schema';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   const { imageUrl, model, description, email, uid } = await req.json();
 
-  const result = await db
-    .insert(WireframeToCodeTable)
-    .values({
-      uid: uid,
-      description: description,
-      imageUrl: imageUrl,
-      model: model,
-      createdBy: email,
-    })
-    .returning({ id: WireframeToCodeTable.id });
+  const creditResult = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email));
 
-  return NextResponse.json(result);
+  if (creditResult[0]?.credits && creditResult[0].credits > 0) {
+    const result = await db
+      .insert(WireframeToCodeTable)
+      .values({
+        uid: uid,
+        description: description,
+        imageUrl: imageUrl,
+        model: model,
+        createdBy: email,
+      })
+      .returning({ id: WireframeToCodeTable.id });
+
+    // Update user credit after insert
+    const data = await db
+      .update(usersTable) 
+      .set({ credits: creditResult[0]?.credits - 1 })
+      .where(eq(usersTable.email, email));
+
+    return NextResponse.json(result);
+  } else {
+    return NextResponse.json({ error: 'Not enough credits' });
+  }
 }
 
 export async function GET(req: NextRequest) {

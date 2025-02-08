@@ -6,6 +6,7 @@ import { usersTable } from "@/configs/schema";
 
 export async function POST(req: NextRequest) {
     const { userEmail, userName } = await req.json();
+    
 
     // try {
     const result = await db.select().from(usersTable)

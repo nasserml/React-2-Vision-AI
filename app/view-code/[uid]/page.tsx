@@ -38,7 +38,7 @@ function ViewCode() {
 
     setRecord(result?.data);
 
-    if (resp?.code == null) {
+    if (resp?.code == null ) {
       await GenerateCode(resp);
     } else {
       setCodeResp(resp?.code?.resp);

@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAuthContext } from '@/app/provider';
 import { useRouter } from 'next/navigation';
 import Constants from '@/data/Constants';
+import { toast } from 'sonner';
 
 function ImageUpload() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -62,6 +63,12 @@ function ImageUpload() {
       email: user?.email,
     });
     console.log(result.data);
+    if (result?.data?.error) {
+      console.log('Not enough credits');
+      setLoading(false);
+      toast.error('Not enough credits');
+      return;
+    }
 
     setLoading(false);
     router.push('/view-code/' + uid);
