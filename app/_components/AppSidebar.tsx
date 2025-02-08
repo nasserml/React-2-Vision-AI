@@ -53,9 +53,9 @@ export function AppSidebar() {
             alt="logo"
             width={100}
             height={100}
-            className="w-full h-full"
+            className="w-full h-[100px]"
           />
-          <h2 className="text-sm text-gray-400 text-center">Build Awesome</h2>
+          <h2 className="text-sm text-gray-400 text-center mt-4">Vision to React</h2>
         </div>
       </SidebarHeader>
       <SidebarContent>
