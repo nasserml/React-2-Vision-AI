@@ -24,7 +24,7 @@ export default function Home() {
             {/* <a className="flex-none text-xl font-semibold dark:text-white" href="#" aria-label="Brand">Brand</a> */}
             <div>
               {/* <button type="button" className="hs-collapse-toggle size-9 flex justify-center items-center text-sm font-semibold rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:border-neutral-700 dark:hover:bg-neutral-700" data-hs-collapse="#navbar-collapse-with-animation" aria-controls="navbar-collapse-with-animation" aria-label="Toggle navigation"> */}
-              <Image src={'/logo.svg'} alt="logo" width={150} height={150} />
+              <Image src={'/logo.svg'} alt="logo" width={150} height={150} className="w-full " />
               {/* </button> */}
             </div>
           </div>
@@ -60,9 +60,9 @@ export default function Home() {
         <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-10">
           <div className="mt-5 max-w-2xl text-center mx-auto">
             <h1 className="block font-bold text-gray-800 text-4xl md:text-5xl lg:text-6xl dark:text-neutral-200">
-              Build Something
+              REACT  
               <span className="bg-clip-text bg-gradient-to-tl from-blue-600 to-violet-600 text-transparent">
-                With NextJs
+                 {" "} TO VISION
               </span>
             </h1>
           </div>
